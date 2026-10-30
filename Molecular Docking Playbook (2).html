@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Molecular Docking Playbook</title>
+<style>
+:root{--b1:#060913;--b2:#0b1630;--gl:rgba(255,255,255,.07);--bd:rgba(255,255,255,.16);--tx:#e9f1ff;--mu:#9bb0cf;--ac:#35e0c4;--ac2:#6a8cff;--cb:rgba(3,8,20,.65);--ct:#b8ffee;--ok:#35e07a;--no:#ff6b6b;--wa:#ffb35c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--b1:#eaf1ff;--b2:#dfeaff;--gl:rgba(255,255,255,.55);--bd:rgba(40,70,140,.22);--tx:#0e1b33;--mu:#4a5d80;--ac:#0b8f7c;--ac2:#3b5bdb;--cb:rgba(10,25,60,.85);--ct:#b8ffee;--ok:#1f9d55;--no:#d1493f;--wa:#c26a10}}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:radial-gradient(1200px 700px at 15% 10%,var(--b2),var(--b1));color:var(--tx);font:16px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;overflow:hidden}
+.blob{position:fixed;border-radius:50%;filter:blur(90px);opacity:.45;z-index:0;animation:fl 14s ease-in-out infinite alternate}
+.b1{width:380px;height:380px;background:var(--ac);top:-100px;right:-80px}.b2{width:420px;height:420px;background:var(--ac2);bottom:-140px;left:-100px;animation-delay:-6s}
+@keyframes fl{to{transform:translate(40px,30px) scale(1.15)}}
+.app{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;max-width:980px;margin:0 auto;padding:14px 14px 10px}
+.glass{background:var(--gl);border:1px solid var(--bd);border-radius:20px;backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:0 10px 40px rgba(0,0,0,.25)}
+header{display:flex;align-items:center;gap:10px;padding:8px 12px}
+.brand{font-weight:700;letter-spacing:.04em;color:var(--ac);white-space:nowrap}.xp{margin-left:auto;font-size:13px;white-space:nowrap;color:var(--mu)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.chips button{flex:none;background:transparent;border:1px solid var(--bd);color:var(--mu);padding:4px 11px;border-radius:99px;font:13px system-ui;cursor:pointer}.chips button.on{background:var(--ac);color:#04121a;border-color:var(--ac);font-weight:600}
+.prog{height:4px;background:var(--bd);border-radius:4px;margin:10px 2px;overflow:hidden}.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width .4s}
+.stage{flex:1;min-height:0;overflow:auto}
+.slide{padding:22px 26px;min-height:100%;animation:in .35s ease}
+@keyframes in{from{opacity:0;transform:translateY(14px)}}
+.kick{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ac)}
+h2{font-size:1.65rem;margin:.2em 0 .6em;line-height:1.25}h3{font-size:1rem;margin:1em 0 .3em;color:var(--ac)}
+.sub,.cap{color:var(--mu);font-size:14px}
+.card{background:var(--gl);border:1px solid var(--bd);border-radius:14px;padding:12px 16px;margin:10px 0}.tip{border-left:3px solid var(--ac)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;margin:12px 0}.flow span{background:var(--gl);border:1px solid var(--bd);border-radius:10px;padding:6px 10px}.flow .hl{background:var(--ac);color:#04121a;border-color:var(--ac);font-weight:600}.flow i{color:var(--mu);font-style:normal}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid var(--bd);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--gl)}.tw{overflow-x:auto}
+.code{position:relative;margin:10px 0}pre{background:var(--cb);color:var(--ct);padding:14px;border-radius:12px;overflow-x:auto;font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;margin:0;border:1px solid var(--bd)}
+.code button{position:absolute;top:6px;right:6px;font:12px system-ui;background:rgba(255,255,255,.14);color:#fff;border:1px solid var(--bd);border-radius:6px;padding:3px 8px;cursor:pointer}
+code{font:.9em ui-monospace,Menlo,monospace;background:var(--gl);padding:1px 5px;border-radius:5px}
+.btn{display:inline-block;background:linear-gradient(90deg,var(--ac),var(--ac2));color:#04121a;padding:12px 20px;border-radius:12px;font-weight:700;text-decoration:none}
+.svgs svg{width:100%;height:auto;background:var(--gl);border:1px solid var(--bd);border-radius:14px}.svgs text{font:12px system-ui;fill:var(--tx)}
+input[type=range]{width:100%;accent-color:var(--ac)}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:11px 14px;border:1px solid var(--bd);border-radius:12px;background:var(--gl);color:var(--tx);font:15px system-ui;cursor:pointer}.opt:hover{border-color:var(--ac)}.opt.ok{border-color:var(--ok);background:rgba(53,224,122,.16)}.opt.no{border-color:var(--no);background:rgba(255,107,107,.14)}
+.fb{min-height:24px;font-size:14px;margin:8px 0}
+footer{display:flex;align-items:center;gap:10px;padding:10px 12px;margin-top:10px}.cnt{flex:1;text-align:center;font-size:13px;color:var(--mu)}
+.nav{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#04121a;border:0;border-radius:12px;padding:11px 22px;font:700 15px system-ui;cursor:pointer}.nav.bk{background:var(--gl);color:var(--tx);border:1px solid var(--bd)}.nav:disabled{opacity:.35;cursor:not-allowed}
+#src{display:none}
+@media(max-width:720px){.g2{grid-template-columns:1fr}.slide{padding:16px}h2{font-size:1.35rem}.brand{display:none}}
+</style></head><body>
+<div class="blob b1"></div><div class="blob b2"></div>
+<div class="app">
+<header class="glass"><span class="brand">DOCKING//PLAYBOOK</span><div class="chips" id="chips"></div><span class="xp" id="xp">XP 0</span></header>
+<div class="prog"><i id="pb"></i></div>
+<div class="stage" id="stage"></div>
+<footer class="glass"><button class="nav bk" id="bk">← Back</button><span class="cnt" id="cnt"></span><button class="nav" id="nx">Next →</button></footer>
+</div>
+
+<div id="src">
+<section data-c="Basics" data-t="Where docking sits in the pipeline">
+<div class="flow"><span>Target identification</span><i>→</i><span>Target validation</span><i>→</i><span class="hl">Hit discovery</span><i>→</i><span class="hl">Hit-to-lead</span><i>→</i><span class="hl">Lead optimization</span><i>→</i><span>Preclinical (ADMET, tox)</span><i>→</i><span>Clinical I–III</span><i>→</i><span>Approval</span></div>
+<p>Highlighted stages are where docking is used.docking belongs to <b>structure-based virtual screening</b>, a hit discovery method. It is also reused in hit-to-lead and lead optimization to explain and predict how analogues bind.</p></section>
+
+<section data-c="Basics" data-t="Traditional vs computer-aided discovery">
+<div class="tw"><table><tr><th></th><th>Traditional</th><th>CADD</th></tr>
+<tr><td>Start</td><td>Physical libraries, natural products, serendipity</td><td>Structures, sequences, virtual libraries</td></tr>
+<tr><td>Testing</td><td>Wet-lab assays for everything</td><td>Predict first, test only the best</td></tr>
+<tr><td>Cost/time</td><td>Very high</td><td>Cheaper early; fewer compounds to buy and test</td></tr>
+<tr><td>Weakness</td><td>Low hit rate, heavy labour</td><td>Predictions can be wrong</td></tr></table></div>
+<p>CADD has two branches: <b>structure-based</b> (docking, MD) and <b>ligand-based</b> (QSAR, pharmacophore, similarity).</p></section>
+
+<section data-c="Basics" data-t="What is molecular docking?">
+<p>Docking predicts <b>how a ligand fits into a protein’s binding site</b> and <b>how strongly</b>.</p>
+<div class="g2"><div class="card"><b>1. Search</b><br>Samples orientations, positions and conformations (poses) in the site.</div><div class="card"><b>2. Scoring</b><br>Estimates binding energy (Vina: kcal/mol, more negative = better) to rank poses.</div></div>
+<div class="card tip">Scores are estimates for ranking, not measured affinities. Always inspect poses and validate.</div></section>
+
+<section data-c="Basics" data-t="Docking vs high-throughput screening">
+<div class="tw"><table><tr><th></th><th>HTS</th><th>Docking</th></tr>
+<tr><td>Nature</td><td>Experimental, robots and plates</td><td>Computational prediction</td></tr>
+<tr><td>Needs</td><td>Physical compounds and an assay</td><td>Target 3D structure and ligand structures</td></tr>
+<tr><td>Scale</td><td>Typically 10⁵–10⁶ compounds</td><td>Millions to billions, virtually</td></tr>
+<tr><td>Output</td><td>Measured activity</td><td>Predicted pose and score</td></tr></table></div>
+<p>They complement each other: docking pre-filters a huge library so a small, enriched set goes to the lab.</p></section>
+
+<section data-c="Basics" data-t="The virtual screening funnel">
+<div class="flow"><span>Library (ZINC, ChEMBL, PubChem)</span><i>→</i><span>Property filters (Lipinski, PAINS)</span><i>→</i><span>Fast screening</span><i>→</i><span>Top hits</span><i>→</i><span class="hl">Careful docking of each</span><i>→</i><span>Rescoring, MD, visual check</span><i>→</i><span>Wet lab</span></div>
+<p> mass-screen cheaply, keep the top fraction, then dock each into the target with higher exhaustiveness. Each stage shrinks the set so expensive steps run on fewer molecules.</p></section>
+
+<section data-c="Docking" data-t="The six steps of a docking run">
+<ol><li><b>Define the target:</b> pick, clean, add hydrogens, save as PDBQT.</li><li><b>Define the ligand(s):</b> 3D coordinates, pH 7.4, charges, PDBQT.</li><li><b>Define the box</b> around the binding site.</li><li><b>Run docking</b> (exhaustiveness, number of poses).</li><li><b>Analyse:</b> rank, check H-bonds and hydrophobic contacts.</li><li><b>Validate:</b> redock the native ligand; RMSD under about 2 Å.</li></ol></section>
+
+<section data-c="Docking" data-t="Why define a box, and the easy case">
+<p>Vina only searches inside the box. A box on the real site is faster, more accurate and more reproducible than searching the whole protein.</p>
+<div class="card tip"><b>With a co-crystal ligand (easy):</b> center = geometric center of the bound ligand’s atoms. Size = ligand extent + about 8–10 Å padding (often 20–25 Å per side).</div></section>
+
+<section data-c="Docking" data-t="Co-crystal vs apo: see the difference">
+<div class="g2 svgs"><div>
+<svg viewBox="0 0 300 220" role="img" aria-label="Protein with co-crystallized ligand and docking box"><path d="M40 60C70 20 150 10 200 30C260 50 280 110 250 160C220 210 120 215 70 180C30 150 20 100 40 60Z" fill="rgba(106,140,255,.25)" stroke="var(--bd)" stroke-width="2"/><ellipse cx="145" cy="118" rx="52" ry="42" fill="var(--b1)" stroke="var(--ac)" stroke-width="2"/>
+<polygon points="156,112 148,125.9 132,125.9 124,112 132,98.1 148,98.1" fill="none" stroke="var(--ac)" stroke-width="3"/><polygon points="180,125.9 172,139.8 156,139.8 148,125.9 156,112 172,112" fill="none" stroke="var(--ac)" stroke-width="3"/>
+<circle cx="98" cy="98" r="6" fill="var(--wa)"/><circle cx="196" cy="152" r="6" fill="var(--wa)"/><line x1="104" y1="100" x2="124" y2="108" stroke="var(--wa)" stroke-dasharray="4 3" stroke-width="2"/><line x1="190" y1="150" x2="176" y2="142" stroke="var(--wa)" stroke-dasharray="4 3" stroke-width="2"/>
+<rect class="bx" x="101" y="64" width="110" height="110" fill="none" stroke="var(--no)" stroke-width="2" stroke-dasharray="6 4"/><text x="16" y="212">ligand (HETATM), H-bonds, docking box</text></svg>
+<p class="cap"><b>Co-crystallized:</b> the PDB file contains a HETATM ligand in the pocket; its centroid gives the box center.</p>
+<div class="card"><b>Try it: box size</b><input type="range" class="bs" min="40" max="200" value="110" aria-label="Box size"><div class="bm cap"></div></div></div>
+<div>
+<svg viewBox="0 0 300 220" role="img" aria-label="Apo protein with predicted pockets"><path d="M40 60C70 20 150 10 200 30C260 50 280 110 250 160C220 210 120 215 70 180C30 150 20 100 40 60Z" fill="rgba(106,140,255,.25)" stroke="var(--bd)" stroke-width="2"/><ellipse cx="145" cy="118" rx="52" ry="42" fill="var(--b1)" stroke="var(--mu)" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="145" cy="118" r="30" fill="none" stroke="var(--ac)" stroke-width="2"/><circle cx="78" cy="152" r="18" fill="none" stroke="var(--wa)" stroke-width="2"/><circle cx="212" cy="72" r="16" fill="none" stroke="var(--wa)" stroke-width="2"/>
+<text x="139" y="124" style="font-size:22px">?</text><text x="134" y="84">#1</text><text x="70" y="180">#2</text><text x="205" y="50">#3</text><text x="16" y="212">no ligand, fpocket candidate pockets</text></svg>
+<p class="cap"><b>Apo:</b> no HETATM to copy coordinates from, so you must predict the site. Pockets can also differ in shape without a ligand. <i>Schematic, not real coordinates.</i></p></div></div></section>
+
+<section data-c="Docking" data-t="No co-crystal? Find the pocket with fpocket">
+<p><b>fpocket</b> is a geometry-based pocket detector. It finds cavities on the surface (Voronoi tessellation and alpha spheres), ranks them by druggability-related descriptors, and outputs pocket atoms and centers. Use the top pocket’s center and extent as your box. It tells you <i>where</i> to dock, not how strongly.</p>
+<div class="code"><pre>!apt-get -qq install -y fpocket
+!fpocket -f /content/protein.pdb
+# results in /content/protein_out/ (pockets/ and protein_info.txt)</pre></div>
+<p class="sub">Other options: P2Rank (machine learning), CASTp, literature or UniProt residues, a homolog with a ligand, or blind docking with a whole-protein box and higher exhaustiveness, then redock into the best site.</p></section>
+
+<section data-c="Docking" data-t="AI-based molecular docking">
+<p><b>DiffDock</b> uses diffusion models trained on protein-ligand complexes to propose poses; <b>GNINA</b> adds CNN scoring on top of classical sampling.</p>
+<div class="g2"><div class="card"><b>Uses</b><br>Blind docking without a box, fast pose proposals, better rescoring of Vina poses, some receptor flexibility.</div><div class="card"><b>Caveats</b><br>May generalise poorly to novel pockets, give strained poses, and confidence is not affinity. Refine and rescore with physics-based methods.</div></div></section>
+
+<section data-c="Play" data-t="Level 1: Pick the target" data-q="0"></section>
+<section data-c="Play" data-t="Level 2: Prepare the protein" data-q="1"></section>
+<section data-c="Play" data-t="Level 3: Prepare the ligand" data-q="2"></section>
+<section data-c="Play" data-t="Level 4: Define the box" data-q="3"></section>
+<section data-c="Play" data-t="Level 5: Run Vina" data-q="4"></section>
+<section data-c="Play" data-t="Level 6: Analyse" data-q="5"></section>
+<section data-c="Play" data-t="Level 7: Validate" data-q="6"></section>
+
+<section data-c="Hands-on" data-t="Colab notebook and tools">
+<p><a class="btn" href="https://colab.research.google.com/drive/11889IP_V4f6lnTzgjodZcFZG3Wnl5Jix0" target="_blank" rel="noopener">Click here to access the Colab notebook</a></p>
+<p class="sub">Run the next steps as cells, in order. Replace <code>6C30</code> with your PDB ID and <code>XXX</code> with the ligand’s 3-letter code from the RCSB page.</p>
+<h3>Install</h3><div class="code"><pre>!apt-get -qq install -y openbabel fpocket
+!wget -q https://github.com/ccsb-scripps/AutoDock-Vina/releases/download/v1.2.5/vina_1.2.5_linux_x86_64 -O /content/vina
+!chmod +x /content/vina</pre></div><p class="sub">Or keep your <code>autodock_vina_1_1_2</code> tarball and use its <code>bin/vina</code> path.</p></section>
+
+<section data-c="Hands-on" data-t="Fetch the target and ligand">
+<div class="code"><pre># target from RCSB
+!wget -q https://files.rcsb.org/download/6C30.pdb -O /content/6C30.pdb
+# co-crystal ligand from RCSB (ideal SDF)
+!wget -q https://files.rcsb.org/ligands/download/XXX_ideal.sdf -O /content/native_ligand.sdf
+# your ligand (rofecoxib) with 3D coordinates from PubChem
+!wget -q "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/rofecoxib/SDF?record_type=3d" -O /content/clean_vioxx.sdf
+!ls -lh /content   # confirm files exist and are not empty</pre></div></section>
+
+<section data-c="Hands-on" data-t="Split protein and ligand (grep and cat)">
+<div class="code"><pre>!grep "^ATOM" /content/6C30.pdb > /content/protein.pdb
+!grep "^HETATM" /content/6C30.pdb | grep " XXX " > /content/native_lig.pdb
+!cat /content/native_lig.pdb | head -n 5
+!cat /content/protein.pdb /content/native_lig.pdb > /content/complex.pdb   # merged, for viewing</pre></div>
+<p class="sub">If the entry has several chains, keep one (filter the chain column) so you do not dock into duplicates.</p></section>
+
+<section data-c="Hands-on" data-t="Box center and size from the native ligand">
+<div class="code"><pre>import numpy as np
+xyz = np.array([[float(l[30:38]), float(l[38:46]), float(l[46:54])]
+                for l in open('/content/native_lig.pdb') if l.startswith('HETATM')])
+c = xyz.mean(axis=0); s = xyz.max(axis=0) - xyz.min(axis=0) + 10
+print("center:", c.round(2)); print("size:", s.round(1))</pre></div></section>
+
+<section data-c="Hands-on" data-t="Convert to PDBQT">
+<div class="code"><pre>!obabel /content/protein.pdb -O /content/receptor.pdbqt -xr -p 7.4 --partialcharge gasteiger
+!obabel /content/clean_vioxx.sdf -O /content/ligand.pdbqt -p 7.4 --partialcharge gasteiger
+# add --gen3d to the ligand command if the SDF is only 2D</pre></div></section>
+
+<section data-c="Hands-on" data-t="Run docking">
+<div class="code"><pre>!/content/vina --receptor /content/receptor.pdbqt \
+               --ligand /content/ligand.pdbqt \
+               --center_x 15.42 --center_y -2.15 --center_z 34.89 \
+               --size_x 20 --size_y 20 --size_z 20 \
+               --exhaustiveness 8 --num_modes 9 \
+               --out /content/docked.pdbqt | tee /content/vina_log.txt</pre></div>
+<p class="sub">Use your own center and size from the previous step. Use exhaustiveness 16–32 for final runs.</p></section>
+
+<section data-c="Hands-on" data-t="Read the results">
+<div class="code"><pre>!grep "REMARK VINA RESULT" /content/docked.pdbqt   # kcal/mol, RMSD l.b./u.b. per pose
+!obabel /content/docked.pdbqt -O /content/pose_.sdf -m   # one SDF per pose</pre></div></section>
+
+<section data-c="Hands-on" data-t="Validate by redocking">
+<div class="code"><pre>!obabel /content/native_ligand.sdf -O /content/native.pdbqt -p 7.4 --partialcharge gasteiger
+!/content/vina --receptor /content/receptor.pdbqt --ligand /content/native.pdbqt \
+   --center_x 15.42 --center_y -2.15 --center_z 34.89 --size_x 20 --size_y 20 --size_z 20 \
+   --out /content/redock.pdbqt
+# compare with the crystal pose (RDKit RMSD); aim for under ~2 Å</pre></div></section>
+
+<section data-c="Hands-on" data-t="Batch docking: a mini virtual screen">
+<div class="code"><pre>!mkdir -p /content/lig /content/out
+!obabel /content/library.sdf -O /content/lig/l.pdbqt -m -p 7.4 --partialcharge gasteiger
+!for f in /content/lig/*.pdbqt; do /content/vina --receptor /content/receptor.pdbqt --ligand $f \
+   --center_x 15.42 --center_y -2.15 --center_z 34.89 --size_x 20 --size_y 20 --size_z 20 \
+   --out /content/out/$(basename $f) > /dev/null; done
+!grep -H -m1 "REMARK VINA RESULT" /content/out/*.pdbqt | sort -k4 -n | head -20</pre></div></section>
+
+<section data-c="Hands-on" data-t="Troubleshooting (from your screenshot)">
+<div class="card"><b>“0 molecules converted”</b><br>No readable input. The runtime was still “Connecting”, so <code>/content/clean_vioxx.sdf</code> and <code>/content/6C30.pdb</code> likely did not exist yet. Wait for the runtime, re-fetch the files, run <code>!ls /content</code>, retry.</div>
+<div class="card"><b>“Failed to kekulize aromatic bonds”</b><br>Usually an uncleaned full PDB. Use the cleaned <code>protein.pdb</code>; consider PDBFixer for missing atoms.</div>
+<div class="card"><b>Pose far from the site</b><br>Check the box center is in the receptor’s coordinate frame and the size is large enough.</div></section>
+
+<section data-c="Hands-on" data-t="Mission complete" data-fin="1"></section>
+</div>
+
+<script>
+var Q=[
+['Which PDB entry do you choose as target?',[['High resolution, with a bound ligand similar to yours',1,'Good resolution and a similar ligand give a reliable site.'],['Any entry, resolution does not matter',0,'Poor resolution means uncertain atom positions.'],['One with missing pocket residues',0,'Missing residues distort the site.']]],
+['Before PDBQT conversion, what do you do?',[['Remove waters, extra ligands and duplicate chains, add hydrogens',1,'Yes. Keep only the chain you need.'],['Delete the catalytic residues',0,'Those are what you dock against.'],['Nothing, use the raw file',0,'Raw files cause conversion errors.']]],
+['Your ligand is a 2D SDF. What now?',[['Generate 3D, add H at pH 7.4, assign charges',1,'Correct: obabel --gen3d -p 7.4 --partialcharge gasteiger.'],['Dock the flat 2D drawing',0,'Vina needs sensible 3D geometry.'],['Remove all hydrogens',0,'Polar hydrogens matter for H-bonds.']]],
+['No co-crystallized ligand. Best move?',[['Predict the pocket (fpocket/P2Rank) or use literature residues',1,'Yes, then center the box there. Blind docking is a fallback.'],['Pick random coordinates',0,'You would dock into empty space.'],['Always whole protein, exhaustiveness 8',0,'Large boxes need much higher exhaustiveness.']]],
+['Pose A scores −9.1 and pose B −6.3 kcal/mol. Stronger predicted binder?',[['Pose A (−9.1)',1,'More negative means better predicted binding.'],['Pose B (−6.3)',0,'Less negative is weaker.'],['Cannot be compared',0,'Estimates, but used for ranking.']]],
+['You have a top-ranked pose. Next?',[['Inspect H-bonds and hydrophobic contacts in a viewer',1,'Always check the pose, not just the number.'],['Declare it a drug',0,'Docking is a prediction that needs testing.'],['Trust only the score',0,'Scores mislead without a visual check.']]],
+['You redock the native ligand. Which RMSD is a success?',[['Below about 2 Å from the crystal pose',1,'The usual benchmark for a trustworthy setup.'],['Above 10 Å',0,'That is a failed redock.'],['Any value',0,'RMSD is the point of validation.']]]];
+var SL=[].slice.call(document.querySelectorAll('#src section')),i=0,xp=0,done={},stage=document.getElementById('stage'),nx=document.getElementById('nx'),bk=document.getElementById('bk');
+var chs=[];SL.forEach(function(s){if(chs.indexOf(s.dataset.c)<0)chs.push(s.dataset.c)});
+var cp=document.getElementById('chips');chs.forEach(function(c){var b=document.createElement('button');b.textContent=c;b.onclick=function(){go(SL.findIndex(function(s){return s.dataset.c===c}))};cp.appendChild(b)});
+function go(n){n=Math.max(0,Math.min(SL.length-1,n));i=n;try{history.replaceState(null,'','#s'+(n+1))}catch(e){}show()}
+function show(){var s=SL[i],d=document.createElement('div');d.className='glass slide';d.innerHTML='<div class="kick">'+s.dataset.c+'</div><h2>'+s.dataset.t+'</h2>'+s.innerHTML;stage.innerHTML='';stage.appendChild(d);stage.scrollTop=0;
+d.querySelectorAll('pre').forEach(function(p){var b=document.createElement('button');b.textContent='Copy';b.onclick=function(){try{navigator.clipboard.writeText(p.innerText);b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1400)}catch(e){}};p.parentNode.appendChild(b)});
+var bs=d.querySelector('.bs');if(bs){var bx=d.querySelector('.bx'),bm=d.querySelector('.bm');var u=function(){var v=+bs.value;bx.setAttribute('x',156-v/2);bx.setAttribute('y',119-v/2);bx.setAttribute('width',v);bx.setAttribute('height',v);bm.textContent=v<76?'Too small: the ligand is clipped and poses are forced to be wrong.':v>150?'Too large: slower, needs higher exhaustiveness, poses may land in another pocket.':'Good: covers the ligand with about 8–10 Å of padding.'};bs.oninput=u;u()}
+var q=s.dataset.q;if(q!==undefined){var k=+q,Z=Q[k],tried=0;d.insertAdjacentHTML('beforeend','<p><b>'+Z[0]+'</b></p><div class="os"></div><div class="fb"></div>');var f=d.querySelector('.fb');
+Z[1].forEach(function(o){var b=document.createElement('button');b.className='opt';b.textContent=o[0];b.onclick=function(){if(done[k])return;if(o[1]){b.classList.add('ok');done[k]=1;xp+=tried?5:10;f.textContent='Correct! '+o[2];document.getElementById('xp').textContent='XP '+xp;nx.disabled=false}else{b.classList.add('no');tried=1;f.textContent='Not quite. '+o[2]}};d.querySelector('.os').appendChild(b)});
+if(done[k]){f.textContent='Completed.';d.querySelectorAll('.opt')[Z[1].findIndex(function(o){return o[1]})].classList.add('ok')}}
+if(s.dataset.fin){var r=xp>=60?'Docking Pro':xp>=40?'Rising Chemist':'Keep practising';d.insertAdjacentHTML('beforeend','<p>You earned <b>'+xp+' / 70 XP</b>. Rank: <b>'+r+'</b>.</p><p>You now have the theory and every command. Go run it in Colab.</p><button class="nav" id="rs">Restart</button>');d.querySelector('#rs').onclick=function(){xp=0;done={};document.getElementById('xp').textContent='XP 0';go(0)}}
+document.getElementById('cnt').textContent=(i+1)+' / '+SL.length;document.getElementById('pb').style.width=((i+1)/SL.length*100)+'%';
+cp.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.textContent===s.dataset.c)});
+bk.disabled=i===0;nx.style.visibility=i===SL.length-1?'hidden':'visible';nx.disabled=(q!==undefined&&!done[+q])}
+nx.onclick=function(){go(i+1)};bk.onclick=function(){go(i-1)};
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'&&!nx.disabled&&nx.style.visibility!=='hidden')go(i+1);if(e.key==='ArrowLeft')go(i-1)});
+var h=parseInt((location.hash||'').replace('#s',''),10);go(h>0?h-1:0);
+</script></body></html>
